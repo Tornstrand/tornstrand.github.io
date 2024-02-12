@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Color Changer</title>
+<style>
+  body {
+    background-color: blue; /* Initial background color */
+    height: 100vh;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  button {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<button onclick="changeBackgroundColor()">Click</button>
+
+<script>
+  function changeBackgroundColor() {
+    const colors = ['red', 'green', 'yellow', 'purple', 'orange', 'pink', 'cyan', 'magenta'];
+    // Generate a random index based on the array length
+    const randomIndex = Math.floor(Math.random() * colors.length);
+    // Set the body's background color to a random color from the array
+    document.body.style.backgroundColor = colors[randomIndex];
+  }
+</script>
+
+</body>
+</html>
