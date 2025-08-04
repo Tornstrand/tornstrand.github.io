@@ -1,19 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Football Playbook Creator</title>
-<link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Football Playbook Creator</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-<div id="toolbar">
-  <input id="playerName" placeholder="Player name" />
-  <button id="addPlayer">Add Player</button>
-  <button id="renamePlayer" disabled>Rename Player</button>
-  <button id="drawRoute" disabled>Draw Route</button>
-</div>
-<canvas id="field" width="480" height="960"></canvas>
-<script src="playbook.js"></script>
-</body>
-</html>
+  <div id="toolbar">
+    <input id="playerName" placeholder="Player name" />
+    <button id="addPlayer">Add Player</button>
+    <button id="renamePlayer" disabled>Rename Player</button>
+    <button id="drawRoute" disabled>Draw Route</button>
+  </div>
+  <canvas id="field" width="960" height="480"></canvas>
+
+  <script>
+    const canvas = document.getElementById('field');
+    const ctx = canvas.getContext('2d');
+    const addPlayerBtn = document.getElem
