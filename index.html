@@ -1,38 +1,163 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Color Changer</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Football Playbook Creator</title>
 <style>
-  body {
-    background-color: blue; /* Initial background color */
-    height: 100vh;
-    margin: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  button {
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-  }
+  body { margin:0; display:flex; flex-direction:column; align-items:center; font-family:Arial, sans-serif; }
+  #toolbar { margin:10px; }
+  canvas { border:1px solid #fff; background:#0a662e; }
+  button { margin-right:5px; }
+  input { margin-right:5px; }
 </style>
 </head>
 <body>
-
-<button onclick="changeBackgroundColor()">Click</button>
-
+<div id="toolbar">
+  <input id="playerName" placeholder="Player name" />
+  <button id="addPlayer">Add Player</button>
+  <button id="renamePlayer" disabled>Rename Player</button>
+  <button id="drawRoute" disabled>Draw Route</button>
+</div>
+<canvas id="field" width="480" height="960"></canvas>
 <script>
-  function changeBackgroundColor() {
-    const colors = ['red', 'green', 'yellow', 'purple', 'orange', 'pink', 'cyan', 'magenta'];
-    // Generate a random index based on the array length
-    const randomIndex = Math.floor(Math.random() * colors.length);
-    // Set the body's background color to a random color from the array
-    document.body.style.backgroundColor = colors[randomIndex];
-  }
-</script>
+const canvas = document.getElementById('field');
+const ctx = canvas.getContext('2d');
+const addPlayerBtn = document.getElementById('addPlayer');
+const drawRouteBtn = document.getElementById('drawRoute');
+const playerNameInput = document.getElementById('playerName');
+const renamePlayerBtn = document.getElementById('renamePlayer');
 
+const players = [];
+let playerId = 1;
+let selectedPlayer = null;
+let draggingPlayer = null;
+let offsetX = 0;
+let offsetY = 0;
+let routeMode = false;
+
+function drawField() {
+  ctx.fillStyle = '#0a662e';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(0,0,canvas.width,canvas.height);
+
+  for (let i = 0; i <= 12; i++) {
+    const y = (canvas.height/12)*i;
+    ctx.beginPath();
+    ctx.moveTo(0,y);
+    ctx.lineTo(canvas.width,y);
+    ctx.stroke();
+  }
+}
+
+function drawPlayers() {
+  players.forEach(p => {
+    // draw route
+    if (p.route.length) {
+      ctx.strokeStyle = 'yellow';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(p.x, p.y);
+      p.route.forEach(pt => {
+        ctx.lineTo(pt.x, pt.y);
+      });
+      ctx.stroke();
+    }
+
+    ctx.beginPath();
+    ctx.fillStyle = (p === selectedPlayer) ? '#ff9800' : '#fff';
+    ctx.arc(p.x, p.y, 12, 0, Math.PI*2);
+    ctx.fill();
+    ctx.strokeStyle = '#000';
+    ctx.stroke();
+
+    ctx.fillStyle = '#000';
+    ctx.font = '12px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(p.label, p.x, p.y);
+  });
+}
+
+function render() {
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  drawField();
+  drawPlayers();
+}
+
+addPlayerBtn.addEventListener('click', () => {
+  const label = playerNameInput.value.trim() || `P${playerId}`;
+  players.push({x:canvas.width/2, y:canvas.height/2, label, route:[]});
+  playerId++;
+  playerNameInput.value = '';
+  render();
+});
+
+canvas.addEventListener('mousedown', (e) => {
+  const {offsetX: mx, offsetY: my} = e;
+  for (const p of players) {
+    const dist = Math.hypot(p.x - mx, p.y - my);
+    if (dist < 12) {
+      if (routeMode) {
+        // ignore dragging in route mode
+      } else {
+        selectedPlayer = p;
+        drawRouteBtn.disabled = false;
+        renamePlayerBtn.disabled = false;
+        playerNameInput.value = p.label;
+        draggingPlayer = p;
+        offsetX = mx - p.x;
+        offsetY = my - p.y;
+      }
+      render();
+      return;
+    }
+  }
+  // clicks on canvas while in route mode
+  if (routeMode && selectedPlayer) {
+    selectedPlayer.route.push({x:mx, y:my});
+    render();
+  } else {
+    // click empty space clears selection
+    selectedPlayer = null;
+    drawRouteBtn.disabled = true;
+    renamePlayerBtn.disabled = true;
+    playerNameInput.value = '';
+    render();
+  }
+});
+
+canvas.addEventListener('mousemove', (e) => {
+  if (draggingPlayer && !routeMode) {
+    draggingPlayer.x = e.offsetX - offsetX;
+    draggingPlayer.y = e.offsetY - offsetY;
+    render();
+  }
+});
+
+canvas.addEventListener('mouseup', () => {
+  draggingPlayer = null;
+});
+
+drawRouteBtn.addEventListener('click', () => {
+  if (!selectedPlayer) return;
+  routeMode = !routeMode;
+  drawRouteBtn.textContent = routeMode ? 'Finish Route' : 'Draw Route';
+});
+
+renamePlayerBtn.addEventListener('click', () => {
+  if (!selectedPlayer) return;
+  const newLabel = playerNameInput.value.trim();
+  if (newLabel) {
+    selectedPlayer.label = newLabel;
+    render();
+  }
+});
+
+render();
+</script>
 </body>
 </html>
